@@ -1,7 +1,8 @@
 import {
   Directive,
+  DoCheck,
+  EmbeddedViewRef,
   NgIterable,
-  OnInit,
   TemplateRef,
   ViewContainerRef,
   inject,
@@ -13,19 +14,29 @@ import {
   selector: '[ngForEmpty]',
   standalone: true,
 })
-export class NgForEmptyDirective<T> implements OnInit {
+export class NgForEmptyDirective<T> implements DoCheck {
   private readonly _vcr = inject(ViewContainerRef);
 
   ngForOf = input.required<NgIterable<T>>();
   ngForEmpty = input.required<TemplateRef<unknown>>();
 
-  ngOnInit(): void {
+  private ref?: EmbeddedViewRef<unknown>;
+
+  ngDoCheck(): void {
+    this.ref?.destroy();
+
     if (this._isEmpty(this.ngForOf())) {
-      this._vcr.createEmbeddedView(this.ngForEmpty());
+      this.ref = this._vcr.createEmbeddedView(this.ngForEmpty());
+    } else {
+      this.ref?.destroy();
     }
   }
 
-  private _isEmpty(value: NgIterable<T>): boolean {
-    return [...value].length === 0;
+  private _isEmpty(value?: NgIterable<T>): boolean {
+    if (value) {
+      return [...value].length === 0;
+    }
+
+    return true;
   }
 }
