@@ -1,5 +1,6 @@
 const showName = (name: string, index: number) => {
   // very heavy computation
+  console.log('showName', name, index);
   return `${name} - ${index}`;
 };
 
